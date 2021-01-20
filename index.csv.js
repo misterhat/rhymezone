@@ -1,7 +1,8 @@
-const ExcelJS = require('exceljs');
 const cheerio = require('cheerio');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fetch = require('node-fetch');
 const fs = require('fs');
+const path = require('path');
 
 const TIMEOUT = Number.parseInt(
     fs.readFileSync('./timeout.json').toString(),
@@ -15,14 +16,14 @@ const DESCRIPTIVE_URL =
     'https://www.rhymezone.com/r/rhyme.cgi?Word=%s&typeofrhyme=jjb&org1=syl' +
     '&org2=l&org3=y';
 
-const workbook = new ExcelJS.Workbook();
-const sheet = workbook.addWorksheet('Words');
-
-sheet.columns = [
-    { key: 'word', header: 'Word' },
-    { key: 'describes', header: '_____ word (describes)', width: 100 },
-    { key: 'described', header: 'word _____ (described as)', width: 100 }
-];
+const csvWriter = createCsvWriter({
+    path: __dirname + '/word-descriptions.csv',
+    header: [
+        { id: 'word', title: 'Word' },
+        { id: 'describes', title: '_____ word (describes)' },
+        { id: 'described', title: 'word _____ (described as)' }
+    ]
+});
 
 async function getWords(word) {
     const res = await fetch(DESCRIPTIVE_URL.replace('%s', word), {
@@ -68,10 +69,9 @@ async function getWords(word) {
         .split('\n')
         .map((word) => {
             return word.trim().toLowerCase();
-        })
-        .filter((word) => {
-            return word && word.length;
         });
+
+    const records = [];
 
     for (const word of words) {
         console.log(`saving "${word}"...`);
@@ -93,23 +93,11 @@ async function getWords(word) {
             described = '<empty>';
         }
 
-        sheet.addRow({ word, describes, described });
+        records.push({ word, describes, described });
         await new Promise((resolve) => setTimeout(resolve, TIMEOUT));
     }
 
-    sheet.getColumn('word').eachCell((cell) => {
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-    });
-
-    sheet.getColumn('describes').eachCell((cell) => {
-        cell.alignment = { vertical: 'top', wrapText: true };
-    });
-
-    sheet.getColumn('described').eachCell((cell) => {
-        cell.alignment = { vertical: 'top', wrapText: true };
-    });
-
-    fs.writeFileSync('./output-words.xlsx', await workbook.xlsx.writeBuffer());
+    await csvWriter.writeRecords(records);
 
     console.log('done');
 })();
