@@ -1,0 +1,30 @@
+{
+  "name": "rhymezone",
+  "version": "1.0.0",
+  "description": "scrape descriptive words from rhymezone",
+  "main": "index.js",
+  "scripts": {
+    "build-win64": "nexe --target windows-x64-14.15.3 index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/misterhat/rhymezone.git"
+  },
+  "keywords": [
+    "rhymezone",
+    "scrape",
+    "descriptive",
+    "words"
+  ],
+  "author": "Zorian Medwid <misterhat144@gmail.com>",
+  "license": "AGPL-3.0+",
+  "bugs": {
+    "url": "https://github.com/misterhat/rhymezone/issues"
+  },
+  "homepage": "https://github.com/misterhat/rhymezone#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.5",
+    "csv-writer": "^1.6.0",
+    "node-fetch": "^2.6.1"
+  }
+}
